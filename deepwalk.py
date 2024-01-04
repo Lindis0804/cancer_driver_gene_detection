@@ -17,12 +17,31 @@ from common import device
 import sys
 
 data = torch.load("./data/CPDB_data.pkl")
-
 model =  Node2Vec(data.edge_index, embedding_dim=16, walk_length=80,
                      context_size=5,  walks_per_node=10,
                      num_negative_samples=1, p=1, q=1, sparse=True).to(device)
-loader = model.loader(batch_size=128, shuffle=True)
 optimizer = torch.optim.SparseAdam(list(model.parameters()), lr=0.001)
+loader = model.loader(batch_size=128, shuffle=True)
+TRAINING_TIMES = 10
+CHECK_POINT_FILE = 'checkpoint.txt'
+
+def save_checkpoint(epoch, model, optimizer, filename=CHECK_POINT_FILE):
+    state = {'epoch': epoch, 'model_state_dict': model.state_dict(),
+             'optimizer_state_dict': optimizer.state_dict()}
+    torch.save(state, filename)
+
+# Function to load model and optimizer state
+def load_checkpoint(model, optimizer, filename=CHECK_POINT_FILE):
+  try:
+    checkpoint = torch.load(filename)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    _epoch = checkpoint['epoch']
+  except:
+    _epoch = 1
+  return model, optimizer, _epoch
+
+model, optimizer, _epoch = load_checkpoint(model,optimizer)
 
 def train():
     model.train()
@@ -33,10 +52,11 @@ def train():
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
+    save_checkpoint(epoch,model,optimizer)
     print("finish traing.")
     return total_loss / len(loader)
 
-for epoch in range(1, 400):
+for epoch in range(_epoch, TRAINING_TIMES):
     print(f'training in time {epoch}...')
     loss = train()
     print (loss)

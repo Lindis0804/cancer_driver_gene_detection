@@ -16,7 +16,7 @@ from torch_geometric.utils import dropout_adj, negative_sampling, remove_self_lo
 
 from sklearn import metrics
 from common import device
-EPOCH = 2500
+EPOCH = 10 # standard: 2500
 
 data = torch.load("./data/CPDB_data.pkl")
 data = data.to(device)
@@ -25,7 +25,7 @@ y_all = np.logical_or(data.y, data.y_te)
 mask_all = np.logical_or(data.mask, data.mask_te)
 data.x = data.x[:, :48]
 
-datas = torch.load("./data/str_fearures.pkl")
+datas = torch.load("./data/str_fearures.pkl",map_location=torch.device('cpu'))
 data.x = torch.cat((data.x, datas), 1)
 data = data.to(device)
 
@@ -111,20 +111,21 @@ AUC = np.zeros(shape=(10, 5))
 AUPR = np.zeros(shape=(10, 5))
 
 for i in range(10):
-    print(i)
+    print(f"running {i} time...")
     for cv_run in range(5):
         _, _, tr_mask, te_mask = k_sets[i][cv_run]
         model = Net().to(device)
         # optimizer = torch.optim.Adam(model.parameters(), lr=0.001,weight_decay=0.005)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
+        
         for epoch in range(1, EPOCH):
+            print(f"training in {epoch} times")
             train(tr_mask)
 
         AUC[i][cv_run], AUPR[i][cv_run] = test(te_mask)
 
 
-    print(time.time() - time_start)
+    print(f'finish running after {time.time() - time_start}')
 
 
 print(AUC.mean())
