@@ -1,0 +1,5 @@
+torch==1.13.0
+torch_geometric==1.7.2
+torch_scatter
+torch_cluster
+pandas

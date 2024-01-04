@@ -13,7 +13,8 @@ from torch_geometric.nn import Node2Vec
 from torch_geometric.data import Data, DataLoader
 from torch_geometric.utils import dropout_adj, negative_sampling, remove_self_loops,add_self_loops
 
-
+from common import device
+import sys
 
 data = torch.load("./data/CPDB_data.pkl")
 
@@ -32,9 +33,11 @@ def train():
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
+    print("finish traing.")
     return total_loss / len(loader)
 
-for epoch in range(1, 501):
+for epoch in range(1, 400):
+    print(f'training in time {epoch}...')
     loss = train()
     print (loss)
 

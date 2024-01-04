@@ -15,11 +15,10 @@ from torch_geometric.data import Data, DataLoader
 from torch_geometric.utils import dropout_adj, negative_sampling, remove_self_loops, add_self_loops
 
 from sklearn import metrics
-
+from common import device
 EPOCH = 2500
 
 data = torch.load("./data/CPDB_data.pkl")
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 data = data.to(device)
 Y = torch.tensor(np.logical_or(data.y, data.y_te)).type(torch.FloatTensor).to(device)
 y_all = np.logical_or(data.y, data.y_te)
